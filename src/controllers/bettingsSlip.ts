@@ -102,9 +102,14 @@ export const getAllBettingSlips: RequestHandler = async (req, res, next) => {
 export const updateBettingSlip: RequestHandler<{id: number}> = async (req, res, next) => {
     try {
         const bettingSlipId = req.params.id
+        if(req.body.amount === undefined) return res.status(httpStatus.BAD_REQUEST).json({
+            message: 'Missing amount value to update!'
+        })
+        if(Object.keys(req.body).length > 1) return res.status(httpStatus.BAD_REQUEST).json({
+            message: 'Body should contain ONLY amount value! No other fields of the Betting Slip can be updated!'
+        })
         const updatedAmount = (req.body.amount) as number
         const userInfo:any = req.user
-
         if(updatedAmount <= 0) {
             return res.status(httpStatus.BAD_REQUEST).json({
                 message: 'Amount should be a positive number!'

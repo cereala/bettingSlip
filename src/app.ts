@@ -6,7 +6,6 @@ import eventRoutes from './routes/events.js'
 import teamRoutes from './routes/teams.js'
 import httpStatus from 'http-status'
 import passport from 'passport'
-
 const app: Application = express()
 
 
@@ -14,8 +13,6 @@ const app: Application = express()
 app.use(express.json())
 app.use(express.urlencoded())
 app.use(passport.initialize())
-// app.use(passport.session())
-
 
 
 app.use('/api/bettingSlips', bettingSlipRoutes)
@@ -27,6 +24,16 @@ app.use((err: Error,req: Request, res: Response, next: NextFunction) => {
     res.status(httpStatus.INTERNAL_SERVER_ERROR).json({message: err.message})
 })
 
-app.listen(config.PORT, () => {
+const server = app.listen(config.PORT, () => {
     console.log(`Server running on port ${config.PORT}`)
 })
+
+process.on('SIGTERM', () => {
+    console.info('SIGTERM signal received.');
+    console.log('Closing http server.');
+    server.close(() => {
+    console.log('Http server closed.');
+    // exit with success
+    process.exit(0);
+    });
+  });
