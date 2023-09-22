@@ -9,7 +9,7 @@ Follow the below steps to run the Betting Slip REST API on your machine.
 ### PostgreSQL needs to be installed on your machine
 ### NodeJS needs to be installed locally
 ### Postman is needed to test the endpoints for the API
-Here is the link to the Postman Collection which contains endpoints to interact with the API
+Export Postman Collection file which contains endpoints to interact with the API: *Betting Slips.postman_collection.json*
 
 
 ## Initialize PostgreSQL database schema
