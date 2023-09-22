@@ -22,7 +22,6 @@ export const createBettingSlip: RequestHandler = (req, res, next) => {
         db.tx(async transaction => {
             const userIdExists = await transaction.oneOrNone(findUser, [body.userId])
             if(!userIdExists) {
-                console.log(body.userId)
                 return res.status(httpStatus.BAD_REQUEST).json({
                     message: 'User ID does not exist!',
                 })
@@ -134,12 +133,7 @@ export const updateBettingSlip: RequestHandler<{id: number}> = async (req, res, 
 export const deleteBettingSlip: RequestHandler<{id: number}> = async (req, res, next) => {
     try {
         const bettingSlipID = req.params.id
-        // if(!(typeof parseInt(bettingSlipID) === 'number')) {
-        //     console.log(typeof bettingSlipID)
-        //     return res.status(httpStatus.BAD_REQUEST).json({
-        //         message: 'Betting slip id is not of type number'
-        //     })
-        // }
+       
         const rowCount = await db.result('DELETE FROM betting_slips WHERE betting_slip_id = $1', [bettingSlipID], r => r.rowCount)
         if(rowCount === 0) {
             res.status(httpStatus.NOT_FOUND).json({

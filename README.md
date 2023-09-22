@@ -1,6 +1,6 @@
 # Betting Slip REST API - Using NodeJS, TypeScript, JWT, Passport & Postgresql
 
-## LUNCH & LEARN NOTES 
+## NOTES 
 
 Follow the below steps to run the Betting Slip REST API on your machine.
 

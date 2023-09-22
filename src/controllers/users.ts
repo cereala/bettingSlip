@@ -21,7 +21,6 @@ export const createUser: RequestHandler = async (req, res, next) => {
         db.tx(async transaction => {
             const usernameExists = await transaction.oneOrNone('SELECT username FROM users WHERE username = $1', body.username)
             if(usernameExists) {
-                console.log("Username " + body.username + " already exists in DB. Please select a unique username!")
                 return res.status(httpStatus.BAD_REQUEST).json({
                     message: `Username ${body.username} already exists in DB. Please select a unique username!`
                 })
@@ -60,7 +59,6 @@ export const deleteUser: RequestHandler<{id: number}> = async (req, res, next) =
 
 export const loginUser: RequestHandler = async (req, res, next) => {
     try {
-        console.log(req)
         const jwt = jsonwebtoken.sign({
                 username: req.body.username,
                 password: req.body.password
