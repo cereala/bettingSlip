@@ -4,7 +4,7 @@
 
 CREATE TABLE IF NOT EXISTS public.betting_slips
 (
-    betting_slip_id integer NOT NULL DEFAULT nextval('betting_slips_betting_slip_id_seq'::regclass),
+    betting_slip_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     user_id integer NOT NULL,
     event_id integer NOT NULL,
     amount numeric NOT NULL,
@@ -28,7 +28,7 @@ ALTER TABLE IF EXISTS public.betting_slips
 
 CREATE TABLE IF NOT EXISTS public.events
 (
-    event_id integer NOT NULL DEFAULT nextval('events_event_id_seq'::regclass),
+    event_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     event_name text COLLATE pg_catalog."default" NOT NULL,
     event_date date NOT NULL,
     winning_team_id integer,
