@@ -1,7 +1,7 @@
 import { RequestHandler } from "express"
 import httpStatus from 'http-status'
 import { db } from "../config/dbConnection"
-import { isTeam } from "../typeguards/isInterface"
+import { isTeam, Team } from "../types/Team"
 
 export const createTeam: RequestHandler = async (req, res, next) => {
     try {

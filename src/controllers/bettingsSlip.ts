@@ -2,7 +2,7 @@ import { RequestHandler} from 'express'
 import { db } from '../config/dbConnection'
 import httpStatus from 'http-status'
 import { ParameterizedQuery as PQ } from 'pg-promise'
-import { isBettingSlip } from '../typeguards/isInterface'
+import { isBettingSlip, BettingSlip } from '../types/BettingSlip'
 
 export const createBettingSlip: RequestHandler = (req, res, next) => {
     try {

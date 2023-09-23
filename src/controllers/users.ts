@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import httpStatus from 'http-status'
 import { db } from "../config/dbConnection";
-import { isUser } from "../typeguards/isInterface";
+import { isUser, User } from "../types/User";
 import { config } from "../config/config";
 import bcrypt from 'bcrypt'
 import jsonwebtoken from 'jsonwebtoken'

@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "watch": "tsc -w",
+    "build": "tsc -p .",
     "start": "nodemon dist/app.js"
   },
   "keywords": [],

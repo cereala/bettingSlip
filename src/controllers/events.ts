@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
-import { isEvent } from "../typeguards/isInterface";
-import {Event} from '../types/Event'
+import {Event, isEvent} from '../types/Event'
 import httpStatus from 'http-status'
 import { db } from "../config/dbConnection";
 
