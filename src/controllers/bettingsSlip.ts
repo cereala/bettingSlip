@@ -1,8 +1,8 @@
 import { RequestHandler} from 'express'
 import { db } from '../config/dbConnection'
 import httpStatus from 'http-status'
-import { ParameterizedQuery as PQ } from 'pg-promise'
 import { isBettingSlip, BettingSlip } from '../types/BettingSlip'
+import { userIdExists, eventIdExists, teamIdExists, insertBettingSlip, getBettingSlipByIdAndUserId, getAllBettingSlipsByUserId, updateBettingSlipAmountByIdAndUserId, deleteBettingSlipByIdAndUserId } from '../config/sqlQueries'
 
 export const createBettingSlip: RequestHandler = (req, res, next) => {
     try {
@@ -14,26 +14,23 @@ export const createBettingSlip: RequestHandler = (req, res, next) => {
             })
         }
 
-        const findUser = new PQ('SELECT user_id FROM users WHERE user_id = $1')
-        const findEvent = new PQ('SELECT event_id FROM events WHERE event_id = $1')
-        findEvent.values = [body.eventId]
-
         // need to check that event_id,user and winning_team_id EXISTS before creating a new BettingSlip entry in our db
+        //TODO userId should be fetched from the JWT token and not from body. This way you can't create tickets on behalf of another use
         db.tx(async transaction => {
-            const userIdExists = await transaction.oneOrNone(findUser, [body.userId])
-            if(!userIdExists) {
+            const userExists = await transaction.oneOrNone(userIdExists, [body.userId])
+            if(!userExists) {
                 return res.status(httpStatus.BAD_REQUEST).json({
                     message: 'User ID does not exist!',
                 })
             }
-            const teamExists = await transaction.oneOrNone('SELECT team_id FROM teams WHERE team_id = $1', [body.winningTeamId])
+            const teamExists = await transaction.oneOrNone(teamIdExists, [body.winningTeamId])
             if(!teamExists) {
                 return res.status(httpStatus.BAD_REQUEST).json({
                     message: 'Team ID does not exist!',
                 })
             }
 
-            const eventExists = await transaction.oneOrNone(findEvent)
+            const eventExists = await transaction.oneOrNone(eventIdExists, [body.eventId])
             if(!eventExists) {
                 return res.status(httpStatus.BAD_REQUEST).json({
                     message: 'Event ID does not exist!'
@@ -45,7 +42,7 @@ export const createBettingSlip: RequestHandler = (req, res, next) => {
                     message: 'Amount should be a positive number!'
                 })
             }
-            const newId = await transaction.one('INSERT INTO betting_slips(user_id,event_id, winning_team_id,amount) VALUES ($1, $2, $3, $4) RETURNING betting_slip_id', [body.userId, body.eventId, body.winningTeamId, body.amount], r => r.betting_slip_id)
+            const newId = await transaction.one(insertBettingSlip, [body.userId, body.eventId, body.winningTeamId, body.amount], r => r.betting_slip_id)
 
             res.status(httpStatus.CREATED).json({
                 message: 'Created a New Bet with id ' + newId
@@ -63,17 +60,17 @@ export const createBettingSlip: RequestHandler = (req, res, next) => {
 export const getBettingSlip: RequestHandler<{id: number}> = async (req, res, next) => {
     const bettingSlipID = req.params.id
     try {
-        
-        const result:BettingSlip | null = await db.oneOrNone('SELECT * FROM betting_slips WHERE betting_slip_id = $1', bettingSlipID)
+        const userInfo:any = req.user 
+        const result:BettingSlip | null = await db.oneOrNone(getBettingSlipByIdAndUserId, [bettingSlipID, userInfo.user_id])
         if(result){
-            res.status(httpStatus.OK).send(result)
+            return res.status(httpStatus.OK).send(result)
         } else {
-            res.status(httpStatus.NOT_FOUND).json({
-                message: 'No Betting Slip was found with ID ' + bettingSlipID
+            return res.status(httpStatus.NOT_FOUND).json({
+                message: `No Betting Slip was found with ID ${bettingSlipID} or it's not your betting slip!`
             })
         }
     } catch (e) {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             message: 'Error when trying to get betting slip with id ' + bettingSlipID
         })
     }
@@ -82,17 +79,16 @@ export const getBettingSlip: RequestHandler<{id: number}> = async (req, res, nex
 export const getAllBettingSlips: RequestHandler = async (req, res, next) => {
     try {
         const userInfo:any = req.user
-       
-        const results: BettingSlip[] | null = await db.any('SELECT * FROM betting_slips WHERE user_id = $1', userInfo.user_id)
+        const results: BettingSlip[] | null = await db.any(getAllBettingSlipsByUserId, userInfo.user_id)
         if(results){
             res.status(httpStatus.OK).send(results)
         } else {
-            res.status(httpStatus.NOT_FOUND).json({
+            return res.status(httpStatus.NOT_FOUND).json({
                 message: "No Betting Slip we're found"
             })
         }
     } catch (error) {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             message: 'Error while getting all betting slips!',
             error: error
         })
@@ -115,8 +111,7 @@ export const updateBettingSlip: RequestHandler<{id: number}> = async (req, res, 
                 message: 'Amount should be a positive number!'
             })
         }
-        console.log(bettingSlipId,userInfo.user_id, updatedAmount)
-        const rowCount = await db.result('UPDATE betting_slips SET amount = $1 WHERE betting_slip_id = $2 AND user_id = $3', [updatedAmount, bettingSlipId, userInfo.user_id], r => r.rowCount)
+        const rowCount = await db.result(updateBettingSlipAmountByIdAndUserId, [updatedAmount, bettingSlipId, userInfo.user_id], r => r.rowCount)
         if(rowCount === 0) {
             return res.status(httpStatus.NOT_FOUND).json({
                 message: 'No betting slip was found with id or its not your betting slip! ' + bettingSlipId
@@ -126,7 +121,7 @@ export const updateBettingSlip: RequestHandler<{id: number}> = async (req, res, 
         return res.status(httpStatus.NO_CONTENT).send()
 
     } catch (error) {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             message: 'Error while updating betting slip amount!',
             error: error
         })
@@ -138,17 +133,17 @@ export const updateBettingSlip: RequestHandler<{id: number}> = async (req, res, 
 export const deleteBettingSlip: RequestHandler<{id: number}> = async (req, res, next) => {
     try {
         const bettingSlipID = req.params.id
-       
-        const rowCount = await db.result('DELETE FROM betting_slips WHERE betting_slip_id = $1', [bettingSlipID], r => r.rowCount)
+        const userInfo:any = req.user
+        const rowCount = await db.result(deleteBettingSlipByIdAndUserId, [bettingSlipID, userInfo.user_id], r => r.rowCount)
         if(rowCount === 0) {
             res.status(httpStatus.NOT_FOUND).json({
-                message: `Betting slip with id ${bettingSlipID} is not in DB!`
+                message: `Betting slip with id ${bettingSlipID} is not in DB or you do not have rights to delete it!`
             })
         } else {
-            return res.status(httpStatus.NO_CONTENT)
+            return res.status(httpStatus.NO_CONTENT).send()
         }
     } catch (error) {
-        res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             message: 'Error while deleting betting slip!',
             error: error
         })

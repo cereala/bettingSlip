@@ -2,9 +2,7 @@ import { RequestHandler } from "express";
 import httpStatus from 'http-status'
 import { db } from "../config/dbConnection";
 import { isUser, User } from "../types/User";
-import { config } from "../config/config";
 import bcrypt from 'bcrypt'
-import jsonwebtoken from 'jsonwebtoken'
 
 export const createUser: RequestHandler = async (req, res, next) => {
     try {
@@ -59,13 +57,10 @@ export const deleteUser: RequestHandler<{id: number}> = async (req, res, next) =
 
 export const loginUser: RequestHandler = async (req, res, next) => {
     try {
-        const jwt = jsonwebtoken.sign({
-                username: req.body.username,
-                password: req.body.password
-            }, config.JWT_SECRET)
+        console.log(req.user)
         res.status(httpStatus.OK).json({
-            accessToken: jwt,
-            message: 'Logged IN!'
+            userInfo: req.user,
+            message: 'Logged In!'
         })
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({

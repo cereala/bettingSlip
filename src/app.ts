@@ -1,4 +1,4 @@
-import express, {Application, NextFunction, Request, Response} from 'express'
+import express, {Application, RequestHandler, NextFunction, Request, Response} from 'express'
 import { config } from './config/config.js'
 import bettingSlipRoutes from './routes/bettingSlip.js'
 import userRoutes from './routes/users.js'
@@ -6,8 +6,8 @@ import eventRoutes from './routes/events.js'
 import teamRoutes from './routes/teams.js'
 import httpStatus from 'http-status'
 import passport from 'passport'
-const app: Application = express()
 
+const app: Application = express()
 
 //Middleware
 app.use(express.json())
