@@ -3,6 +3,7 @@ import { db } from '../config/dbConnection'
 import httpStatus from 'http-status'
 import { isBettingSlip, BettingSlip } from '../types/BettingSlip'
 import { userIdExists, eventIdExists, teamIdExists, insertBettingSlip, getBettingSlipByIdAndUserId, getAllBettingSlipsByUserId, updateBettingSlipAmountByIdAndUserId, deleteBettingSlipByIdAndUserId } from '../config/sqlQueries'
+import { isValidAmount } from '../helpers/helperFuncs'
 
 export const createBettingSlip: RequestHandler = (req, res, next) => {
     try {
@@ -37,7 +38,7 @@ export const createBettingSlip: RequestHandler = (req, res, next) => {
                 })
             }
 
-            if(body.amount <= 0) {
+            if(!isValidAmount(req.body.amount)) {
                 return res.status(httpStatus.BAD_REQUEST).json({
                     message: 'Amount should be a positive number!'
                 })
@@ -106,7 +107,7 @@ export const updateBettingSlip: RequestHandler<{id: number}> = async (req, res, 
         })
         const updatedAmount = (req.body.amount) as number
         const userInfo:any = req.user
-        if(updatedAmount <= 0) {
+        if(isValidAmount(updatedAmount)) {
             return res.status(httpStatus.BAD_REQUEST).json({
                 message: 'Amount should be a positive number!'
             })

@@ -14,7 +14,13 @@ CREATE TABLE IF NOT EXISTS public.betting_slips
     CONSTRAINT event_id FOREIGN KEY (event_id)
         REFERENCES public.events (event_id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
+        NOT VALID,
+    CONSTRAINT user_id FOREIGN KEY (user_id)
+        REFERENCES public.users (user_id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE CASCADE
+        NOT VALID
 )
 
 TABLESPACE pg_default;
@@ -36,7 +42,7 @@ CREATE TABLE IF NOT EXISTS public.events
     CONSTRAINT winning_team_id FOREIGN KEY (winning_team_id)
         REFERENCES public.teams (team_id) MATCH SIMPLE
         ON UPDATE NO ACTION
-        ON DELETE NO ACTION
+        ON DELETE CASCADE
         NOT VALID
 )
 
