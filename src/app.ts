@@ -1,4 +1,4 @@
-import express, {Application, RequestHandler, NextFunction, Request, Response} from 'express'
+import express, {Application, NextFunction, Request, Response} from 'express'
 import { config } from './config/config.js'
 import bettingSlipRoutes from './routes/bettingSlip.js'
 import userRoutes from './routes/users.js'

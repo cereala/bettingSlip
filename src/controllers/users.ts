@@ -40,11 +40,12 @@ export const createUser: RequestHandler = async (req, res, next) => {
 
 export const deleteUser: RequestHandler<{id: number}> = async (req, res, next) => {
     try {
-        const userId = req.params.id
-        const rowCount = await db.result('DELETE FROM users WHERE user_id = $1', [userId], r => r.rowCount)
+        // Fetch userId from JWT token so you can't delete other peoples users
+        const user:any = req.user
+        const rowCount = await db.result('DELETE FROM users WHERE user_id = $1', [user.userId], r => r.rowCount)
         if(rowCount === 0) {
             res.status(httpStatus.OK).json({
-                message: `User with id ${userId} is not in DB!`
+                message: `User with id ${user.userId} is not in DB!`
             })
         } else res.status(httpStatus.NO_CONTENT)
     } catch (error) {
@@ -57,7 +58,6 @@ export const deleteUser: RequestHandler<{id: number}> = async (req, res, next) =
 
 export const loginUser: RequestHandler = async (req, res, next) => {
     try {
-        console.log(req.user)
         res.status(httpStatus.OK).json({
             userInfo: req.user,
             message: 'Logged In!'

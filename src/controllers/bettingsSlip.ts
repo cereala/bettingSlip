@@ -16,7 +16,7 @@ export const createBettingSlip: RequestHandler = (req, res, next) => {
         }
 
         // need to check that event_id,user and winning_team_id EXISTS before creating a new BettingSlip entry in our db
-        //TODO userId should be fetched from the JWT token and not from body. This way you can't create tickets on behalf of another use
+        //TODO userId should be fetched from the JWT token and not from body. This way you can't create tickets on behalf of another user
         db.tx(async transaction => {
             const userExists = await transaction.oneOrNone(userIdExists, [body.userId])
             if(!userExists) {
@@ -107,7 +107,7 @@ export const updateBettingSlip: RequestHandler<{id: number}> = async (req, res, 
         })
         const updatedAmount = (req.body.amount) as number
         const userInfo:any = req.user
-        if(isValidAmount(updatedAmount)) {
+        if(!isValidAmount(updatedAmount)) {
             return res.status(httpStatus.BAD_REQUEST).json({
                 message: 'Amount should be a positive number!'
             })

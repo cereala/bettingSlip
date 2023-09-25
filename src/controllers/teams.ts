@@ -2,6 +2,7 @@ import { RequestHandler } from "express"
 import httpStatus from 'http-status'
 import { db } from "../config/dbConnection"
 import { isTeam, Team } from "../types/Team"
+import { createNewTeam, deleteTeamByID } from "../config/sqlQueries"
 
 export const createTeam: RequestHandler = async (req, res, next) => {
     try {
@@ -11,7 +12,7 @@ export const createTeam: RequestHandler = async (req, res, next) => {
             message: 'Team request body has incorrect structure! Check key names and/or values'
         })
        }
-       const teamId:number | null = await db.oneOrNone('INSERT INTO teams(team_name) VALUES ($1) RETURNING team_id', [body.name], r => r.team_id) 
+       const teamId:number | null = await db.oneOrNone(createNewTeam, [body.name], r => r.team_id) 
        res.status(httpStatus.CREATED).json({
         message: `Created team with id ${teamId}`
        })
@@ -26,7 +27,7 @@ export const createTeam: RequestHandler = async (req, res, next) => {
 export const deleteTeam:RequestHandler<{id: number}> = async (req, res, next) => {
     try {
         const teamId = req.params.id
-        const rowCount = await db.result('DELETE FROM teams WHERE team_id = $1', [teamId], r => r.rowCount)
+        const rowCount = await db.result(deleteTeamByID, [teamId], r => r.rowCount)
 
         if(rowCount === 0) {
             return res.status(httpStatus.OK).json({
