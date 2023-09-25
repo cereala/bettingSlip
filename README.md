@@ -21,7 +21,7 @@ Open pgAdmin and create a database called **bettingslip**
 
 Open **database.json** file and change it with your default user and password for your PostgreSQL instance
 
-Run in the terminal in the root folder : **db-migrate up initialize**
+Run in the terminal in the root project folder : **db-migrate up initialize**
 
 This will create the schema and table structure needed by the project.
 
