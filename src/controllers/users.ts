@@ -38,16 +38,17 @@ export const createUser: RequestHandler = async (req, res, next) => {
     }
 }
 
-export const deleteUser: RequestHandler<{id: number}> = async (req, res, next) => {
+export const deleteUser: RequestHandler = async (req, res, next) => {
     try {
         // Fetch userId from JWT token so you can't delete other peoples users
         const user:any = req.user
-        const rowCount = await db.result('DELETE FROM users WHERE user_id = $1', [user.userId], r => r.rowCount)
+        console.log(req.user)
+        const rowCount = await db.result('DELETE FROM users WHERE user_id = $1', [user.user_id], r => r.rowCount)
         if(rowCount === 0) {
             res.status(httpStatus.OK).json({
-                message: `User with id ${user.userId} is not in DB!`
+                message: `User with id ${user.user_id} is not in DB!`
             })
-        } else res.status(httpStatus.NO_CONTENT)
+        } else res.status(httpStatus.NO_CONTENT).send()
     } catch (error) {
         res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
             message: 'Error while deleting user!',
